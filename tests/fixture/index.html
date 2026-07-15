@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Copy Restriction fixture</title>
+  </head>
+  <body>
+    <main>
+      <p id="supported-selection">A complete paragraph for an authorized viewer.</p>
+    </main>
+    <p id="host-denial" role="alert" hidden>Copying is not allowed.</p>
+    <script>
+      document.addEventListener(
+        "keydown",
+        (event) => {
+          if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "c") {
+            event.preventDefault();
+            document.querySelector("#host-denial").hidden = false;
+          }
+        },
+        true,
+      );
+    </script>
+  </body>
+</html>
