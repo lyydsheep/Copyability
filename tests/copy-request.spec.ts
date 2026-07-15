@@ -15,6 +15,14 @@ const copyabilityTest = test.extend<{ copyabilityPage: Page }>({
   },
 });
 
+const expectNoCopyabilityFeedback = async (page: Page) => {
+  expect(await page.locator("[data-copyability-feedback]").count()).toBe(0);
+};
+
+const expectHostCopyEvents = async (page: Page, count: number) => {
+  await expect(page.locator("#host-copy-events")).toHaveText(String(count));
+};
+
 for (const { name, shortcut } of [
   { name: "Ctrl+C", shortcut: "Control+C" },
   { name: "Cmd+C", shortcut: "Meta+C" },
@@ -29,6 +37,8 @@ for (const { name, shortcut } of [
       .poll(() => copyabilityPage.evaluate(() => navigator.clipboard.readText()))
       .toBe("A complete paragraph for an authorized viewer.");
     await expect(copyabilityPage.locator("#host-denial")).toBeHidden();
+    await expectNoCopyabilityFeedback(copyabilityPage);
+    await expectHostCopyEvents(copyabilityPage, 0);
   });
 }
 
@@ -112,6 +122,8 @@ copyabilityTest("leaves a table descendant outside Supported Selection behavior"
   await copyabilityPage.keyboard.press("Meta+C");
 
   await expect(copyabilityPage.locator("#host-denial")).toBeVisible();
+  await expectNoCopyabilityFeedback(copyabilityPage);
+  await expectHostCopyEvents(copyabilityPage, 1);
 });
 
 copyabilityTest("leaves a selection crossing a non-line unsupported block to the host", async ({
@@ -132,4 +144,115 @@ copyabilityTest("leaves a selection crossing a non-line unsupported block to the
   await copyabilityPage.keyboard.press("Meta+C");
 
   await expect(copyabilityPage.locator("#host-denial")).toBeVisible();
+  await expectNoCopyabilityFeedback(copyabilityPage);
+  await expectHostCopyEvents(copyabilityPage, 1);
+});
+
+copyabilityTest("leaves the native copy behavior alone when there is no selection", async ({
+  copyabilityPage,
+}) => {
+  await copyabilityPage.keyboard.press("Meta+C");
+
+  await expect(copyabilityPage.locator("#host-denial")).toBeVisible();
+  await expectNoCopyabilityFeedback(copyabilityPage);
+  await expectHostCopyEvents(copyabilityPage, 1);
+});
+
+copyabilityTest("leaves a whitespace-only selection outside Copy Request behavior", async ({
+  copyabilityPage,
+}) => {
+  await copyabilityPage.evaluate(() => {
+    const line = document.querySelector("#supported-selection .ace-line");
+    const text = line?.firstChild;
+    if (!text?.textContent) throw new Error("Fixture text is missing");
+
+    const range = document.createRange();
+    range.setStart(text, text.textContent.length - 1);
+    range.setEnd(text, text.textContent.length);
+    const selection = window.getSelection();
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+  });
+  await copyabilityPage.keyboard.press("Meta+C");
+
+  await expect(copyabilityPage.locator("#host-denial")).toBeVisible();
+  await expectNoCopyabilityFeedback(copyabilityPage);
+  await expectHostCopyEvents(copyabilityPage, 1);
+});
+
+for (const { structure, selector } of [
+  { structure: "code block", selector: "#code-selection pre" },
+  { structure: "comment", selector: "#comment-selection .ace-line" },
+  { structure: "whiteboard", selector: "#whiteboard-selection .ace-line" },
+  { structure: "embedded sheet", selector: "#sheet-selection .ace-line" },
+  { structure: "embedded application", selector: "#app-selection .ace-line" },
+]) {
+  copyabilityTest(`leaves ${structure} text outside Supported Selection behavior`, async ({
+    copyabilityPage,
+  }) => {
+    await copyabilityPage.locator(selector).selectText();
+    await copyabilityPage.keyboard.press("Meta+C");
+
+    await expect(copyabilityPage.locator("#host-denial")).toBeVisible();
+    await expectNoCopyabilityFeedback(copyabilityPage);
+    await expectHostCopyEvents(copyabilityPage, 1);
+  });
+}
+
+copyabilityTest("leaves image-only content outside Supported Selection behavior", async ({
+  copyabilityPage,
+}) => {
+  await copyabilityPage.evaluate(() => {
+    const image = document.querySelector("#image-only-selection img");
+    if (!image) throw new Error("Fixture image is missing");
+
+    const range = document.createRange();
+    range.selectNode(image);
+    const selection = window.getSelection();
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+  });
+  await copyabilityPage.keyboard.press("Meta+C");
+
+  await expect(copyabilityPage.locator("#host-denial")).toBeVisible();
+  await expectNoCopyabilityFeedback(copyabilityPage);
+  await expectHostCopyEvents(copyabilityPage, 1);
+});
+
+copyabilityTest("briefly reports a Copy Failure when a Supported Selection cannot be extracted", async ({
+  copyabilityPage,
+}) => {
+  await copyabilityPage.locator("#supported-selection .ace-line").selectText();
+  await copyabilityPage.evaluate(() => {
+    Selection.prototype.toString = () => {
+      throw new DOMException("Fixture extraction failure");
+    };
+  });
+
+  await copyabilityPage.keyboard.press("Meta+C");
+
+  const failure = copyabilityPage.locator('[data-copyability-feedback="error"]');
+  await expect(failure).toHaveText("Copy failed. Please try again.");
+  await expect(failure).toBeVisible();
+  await expect(copyabilityPage.locator("#host-denial")).toBeVisible();
+  await expectHostCopyEvents(copyabilityPage, 1);
+  await expect(failure).toBeHidden({ timeout: 3_000 });
+});
+
+copyabilityTest("briefly reports a Copy Failure when the clipboard write cannot run", async ({
+  copyabilityPage,
+}) => {
+  await copyabilityPage.locator("#supported-selection .ace-line").selectText();
+  await copyabilityPage.evaluate(() => {
+    document.execCommand = () => false;
+  });
+
+  await copyabilityPage.keyboard.press("Meta+C");
+
+  const failure = copyabilityPage.locator('[data-copyability-feedback="error"]');
+  await expect(failure).toHaveText("Copy failed. Please try again.");
+  await expect(failure).toBeVisible();
+  await expect(copyabilityPage.locator("#host-denial")).toBeVisible();
+  await expectHostCopyEvents(copyabilityPage, 1);
+  await expect(failure).toBeHidden({ timeout: 3_000 });
 });

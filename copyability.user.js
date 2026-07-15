@@ -13,6 +13,34 @@
 
   let pendingPlainText = null;
   let copySucceeded = false;
+  let failureTimer = null;
+
+  const showCopyFailure = () => {
+    document.querySelector('[data-copyability-feedback="error"]')?.remove();
+
+    const feedback = document.createElement("div");
+    feedback.dataset.copyabilityFeedback = "error";
+    feedback.setAttribute("role", "alert");
+    feedback.textContent = "Copy failed. Please try again.";
+    Object.assign(feedback.style, {
+      position: "fixed",
+      right: "16px",
+      bottom: "16px",
+      zIndex: "2147483647",
+      padding: "8px 12px",
+      borderRadius: "6px",
+      color: "white",
+      background: "#c9372c",
+      font: "14px/20px system-ui, sans-serif",
+    });
+    document.documentElement.append(feedback);
+
+    if (failureTimer !== null) clearTimeout(failureTimer);
+    failureTimer = setTimeout(() => {
+      feedback.remove();
+      failureTimer = null;
+    }, 1_500);
+  };
 
   const supportedBlockSelector = [
     '.block.docx-text-block[data-block-type="text"]',
@@ -57,11 +85,13 @@
       }
     }
 
-    return textNodes
-      .filter(
-        (node) => node.textContent?.trim() && range.intersectsNode(node),
-      )
-      .every((node) => supportedBlockFor(node));
+    const selectedTextNodes = textNodes.filter(
+      (node) => node.textContent?.trim() && range.intersectsNode(node),
+    );
+    return (
+      selectedTextNodes.length > 0 &&
+      selectedTextNodes.every((node) => supportedBlockFor(node))
+    );
   };
 
   document.addEventListener(
@@ -93,17 +123,30 @@
       const range = selection.getRangeAt(0);
       if (!isSupportedSelection(range)) return;
 
-      const plainText = selection.toString();
-      if (!plainText) return;
+      let plainText;
+      try {
+        plainText = selection.toString();
+      } catch {
+        showCopyFailure();
+        return;
+      }
+      if (!plainText.trim()) return;
 
       pendingPlainText = plainText;
       copySucceeded = false;
-      document.execCommand("copy");
-      pendingPlainText = null;
+      try {
+        document.execCommand("copy");
+      } catch {
+        // A rejected clipboard command is handled below as a Copy Failure.
+      } finally {
+        pendingPlainText = null;
+      }
 
       if (copySucceeded) {
         event.preventDefault();
         event.stopImmediatePropagation();
+      } else {
+        showCopyFailure();
       }
     },
     true,

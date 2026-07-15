@@ -87,9 +87,45 @@
           <div class="ace-line">A visible level-three heading</div>
         </div>
       </div>
+      <div id="comment-selection" class="block" data-block-type="comment">
+        <div class="text-editor" contenteditable="false">
+          <div class="ace-line">Unsupported comment text</div>
+        </div>
+      </div>
+      <div id="whiteboard-selection" class="block" data-block-type="whiteboard">
+        <div class="text-editor" contenteditable="false">
+          <div class="ace-line">Unsupported whiteboard text</div>
+        </div>
+      </div>
+      <div id="sheet-selection" class="block" data-block-type="sheet">
+        <div class="text-editor" contenteditable="false">
+          <div class="ace-line">Unsupported embedded sheet text</div>
+        </div>
+      </div>
+      <div id="app-selection" class="block" data-block-type="embedded_app">
+        <div class="text-editor" contenteditable="false">
+          <div class="ace-line">Unsupported embedded application text</div>
+        </div>
+      </div>
+      <div
+        id="image-only-selection"
+        class="block docx-text-block"
+        data-block-type="text"
+      >
+        <div class="text-editor" contenteditable="false">
+          <div class="ace-line"><img alt="Text visible only in an image" /></div>
+        </div>
+      </div>
     </main>
     <p id="host-denial" role="alert" hidden>Copying is not allowed.</p>
+    <output id="host-copy-events" hidden>0</output>
     <script>
+      document.addEventListener("copy", (event) => {
+        event.preventDefault();
+        const count = document.querySelector("#host-copy-events");
+        count.textContent = String(Number(count.textContent) + 1);
+      });
+
       document.addEventListener(
         "keydown",
         (event) => {
