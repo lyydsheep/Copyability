@@ -2,7 +2,7 @@
 // @name         Copyability
 // @namespace    https://github.com/lyydsheep/Copyability
 // @version      0.1.0
-// @description  Copy selected visible paragraph text as plain text.
+// @description  Copy a Supported Selection as a Plain-text Copy Result.
 // @match        https://my.feishu.cn/wiki/*
 // @run-at       document-start
 // @grant        none
@@ -13,6 +13,56 @@
 
   let pendingPlainText = null;
   let copySucceeded = false;
+
+  const supportedBlockSelector = [
+    '.block.docx-text-block[data-block-type="text"]',
+    '.block.docx-heading1-block[data-block-type="heading1"]',
+    '.block.docx-heading2-block[data-block-type="heading2"]',
+    '.block.docx-heading3-block[data-block-type="heading3"]',
+    '.block.docx-bullet-block[data-block-type="bullet"]',
+  ].join(",");
+
+  const containingElement = (node) =>
+    node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement;
+
+  const supportedBlockFor = (node) => {
+    const line = containingElement(node)?.closest(".ace-line");
+    if (!line?.closest('.text-editor[contenteditable="false"]')) return null;
+    return line.closest(supportedBlockSelector);
+  };
+
+  const isSupportedSelection = (range) => {
+    if (
+      !supportedBlockFor(range.startContainer) ||
+      !supportedBlockFor(range.endContainer)
+    ) {
+      return false;
+    }
+
+    const blocksAreSupported = [
+      ...document.querySelectorAll(".block[data-block-type]"),
+    ]
+      .filter((block) => range.intersectsNode(block))
+      .every((block) => block.matches(supportedBlockSelector));
+    if (!blocksAreSupported) return false;
+
+    const root = range.commonAncestorContainer;
+    const textNodes = [];
+    if (root.nodeType === Node.TEXT_NODE) {
+      textNodes.push(root);
+    } else {
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+      for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+        textNodes.push(node);
+      }
+    }
+
+    return textNodes
+      .filter(
+        (node) => node.textContent?.trim() && range.intersectsNode(node),
+      )
+      .every((node) => supportedBlockFor(node));
+  };
 
   document.addEventListener(
     "copy",
@@ -41,20 +91,7 @@
       if (!selection || selection.isCollapsed || selection.rangeCount === 0) return;
 
       const range = selection.getRangeAt(0);
-      const ancestor =
-        range.commonAncestorContainer.nodeType === Node.ELEMENT_NODE
-          ? range.commonAncestorContainer
-          : range.commonAncestorContainer.parentElement;
-      const textBlock = ancestor?.closest(
-        '.block.docx-text-block[data-block-type="text"]',
-      );
-      if (
-        !textBlock?.querySelector(
-          '.text-editor[contenteditable="false"] .ace-line',
-        )
-      ) {
-        return;
-      }
+      if (!isSupportedSelection(range)) return;
 
       const plainText = selection.toString();
       if (!plainText) return;
