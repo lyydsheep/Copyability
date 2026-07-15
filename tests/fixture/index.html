@@ -6,7 +6,15 @@
   </head>
   <body>
     <main>
-      <p id="supported-selection">A complete paragraph for an authorized viewer.</p>
+      <div
+        id="supported-selection"
+        class="block docx-text-block"
+        data-block-type="text"
+      >
+        <div class="text-editor" contenteditable="false">
+          <div class="ace-line">A complete paragraph for an authorized viewer.</div>
+        </div>
+      </div>
     </main>
     <p id="host-denial" role="alert" hidden>Copying is not allowed.</p>
     <script>
@@ -14,11 +22,9 @@
         "keydown",
         (event) => {
           if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "c") {
-            event.preventDefault();
             document.querySelector("#host-denial").hidden = false;
           }
         },
-        true,
       );
     </script>
   </body>

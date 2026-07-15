@@ -3,7 +3,7 @@
 // @namespace    https://github.com/lyydsheep/Copyability
 // @version      0.1.0
 // @description  Copy selected visible paragraph text as plain text.
-// @match        https://*.feishu.cn/docx/*
+// @match        https://my.feishu.cn/wiki/*
 // @run-at       document-start
 // @grant        none
 // ==/UserScript==
@@ -45,7 +45,16 @@
         range.commonAncestorContainer.nodeType === Node.ELEMENT_NODE
           ? range.commonAncestorContainer
           : range.commonAncestorContainer.parentElement;
-      if (!ancestor?.closest("p")) return;
+      const textBlock = ancestor?.closest(
+        '.block.docx-text-block[data-block-type="text"]',
+      );
+      if (
+        !textBlock?.querySelector(
+          '.text-editor[contenteditable="false"] .ace-line',
+        )
+      ) {
+        return;
+      }
 
       const plainText = selection.toString();
       if (!plainText) return;

@@ -16,7 +16,7 @@ for (const { name, shortcut } of [
     const page = await context.newPage();
     await page.goto(fixtureUrl);
 
-    await page.locator("#supported-selection").selectText();
+    await page.locator("#supported-selection .ace-line").selectText();
     await page.keyboard.press(shortcut);
 
     await expect
