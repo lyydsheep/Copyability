@@ -1,8 +1,13 @@
 // ==UserScript==
 // @name         Copyability
+// @name:zh-CN   Copyability - 飞书文档复制助手
 // @namespace    https://github.com/lyydsheep/Copyability
-// @version      0.2.1
-// @description  Copy a Supported Selection as a Plain-text Copy Result.
+// @version      0.2.2
+// @description  Copy a Supported Selection from a Feishu Wiki document as a Plain-text Copy Result.
+// @description:zh-CN 将授权浏览者可见且可选中的飞书 Wiki 文本复制为纯文本。
+// @author       lyydsheep
+// @homepageURL  https://github.com/lyydsheep/Copyability
+// @supportURL   https://github.com/lyydsheep/Copyability/issues
 // @match        https://my.feishu.cn/wiki/*
 // @run-at       document-start
 // @grant        none

@@ -64,8 +64,32 @@ test("distributed metadata grants no privileges and matches only Feishu wiki pag
   expect(directives.filter(({ name }) => name === "grant")).toEqual([
     { name: "grant", value: "none" },
   ]);
+  expect(directives.filter(({ name }) => name === "name:zh-CN")).toEqual([
+    { name: "name:zh-CN", value: "Copyability - 飞书文档复制助手" },
+  ]);
+  expect(directives.filter(({ name }) => name === "description")).toEqual([
+    {
+      name: "description",
+      value:
+        "Copy a Supported Selection from a Feishu Wiki document as a Plain-text Copy Result.",
+    },
+  ]);
+  expect(
+    directives.filter(({ name }) => name === "description:zh-CN"),
+  ).toEqual([
+    {
+      name: "description:zh-CN",
+      value: "将授权浏览者可见且可选中的飞书 Wiki 文本复制为纯文本。",
+    },
+  ]);
+  expect(directives.filter(({ name }) => name === "supportURL")).toEqual([
+    {
+      name: "supportURL",
+      value: "https://github.com/lyydsheep/Copyability/issues",
+    },
+  ]);
   expect(directives.filter(({ name }) => name === "version")).toEqual([
-    { name: "version", value: "0.2.1" },
+    { name: "version", value: "0.2.2" },
   ]);
   expect(
     directives.filter(({ name }) => ["updateURL", "downloadURL"].includes(name)),

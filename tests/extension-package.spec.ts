@@ -12,7 +12,7 @@ test("builds a Chrome Web Store upload with only extension runtime files", async
   });
 
   const archive = new AdmZip(
-    path.resolve("dist/copyability-extension-0.2.1.zip"),
+    path.resolve("dist/copyability-extension-0.2.2.zip"),
   );
   expect(archive.getEntries().map(({ entryName }) => entryName).sort()).toEqual([
     "content.js",
@@ -29,6 +29,6 @@ test("builds a Chrome Web Store upload with only extension runtime files", async
   expect(manifest).toMatchObject({
     manifest_version: 3,
     name: "Copyability",
-    version: "0.2.1",
+    version: "0.2.2",
   });
 });

@@ -49,7 +49,7 @@ open `chrome://extensions`, enable **Developer mode**, choose **Load unpacked**,
 select this repository's `extension/` directory, and reload the Feishu document.
 
 Run `npm run build:extension` to create the optional Chrome Web Store upload at
-`dist/copyability-extension-0.2.1.zip`. A public store listing is not currently
+`dist/copyability-extension-0.2.2.zip`. A public store listing is not currently
 available.
 
 Only install the extension or userscript after reviewing its source and

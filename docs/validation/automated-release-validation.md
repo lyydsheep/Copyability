@@ -1,7 +1,7 @@
 # Automated release validation
 
 Validated on 2026-07-16 against the primary userscript and optional Chrome
-extension at version `0.2.1`.
+extension at version `0.2.2`.
 
 ## Commands and results
 
