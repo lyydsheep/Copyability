@@ -92,9 +92,10 @@ The distributed userscript and optional extension:
 - do not log document or selection content;
 - load no third-party JavaScript and use no remote runtime dependencies.
 
-Tampermonkey contacts the repository's GitHub URL to install Copyability and
-check its declared version for updates. These distribution requests do not
-contain document content, a Supported Selection, or a Plain-text Copy Result.
+Tampermonkey contacts Greasy Fork or the repository's GitHub URL, depending on
+the installation source, to install Copyability and check for updates. These
+distribution requests do not contain document content, a Supported Selection,
+or a Plain-text Copy Result.
 
 The script does not change Feishu permissions. Use it only as an Authorized
 Viewer and only where copying the Visible Text is permitted by the document
