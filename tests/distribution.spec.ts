@@ -34,6 +34,15 @@ test("distribution documentation covers the complete manual lifecycle", async ()
   }
 });
 
+test("distribution documentation presents the Chrome extension as the primary carrier", async () => {
+  const readme = await readRepositoryText("README.md");
+
+  expect(readme).toContain("### Chrome Web Store (recommended)");
+  expect(readme).toContain("### Local extension validation");
+  expect(readme).toContain("### Tampermonkey fallback");
+  expect(readme).toContain("npm run build:extension");
+});
+
 test("distributed metadata grants no privileges and matches only Feishu wiki pages", async () => {
   const { metadata } = await readUserscript();
   const directives = [...metadata.matchAll(/^\/\/\s+@(\S+)\s+(.+)$/gm)].map(
@@ -55,8 +64,37 @@ test("distributed metadata grants no privileges and matches only Feishu wiki pag
   ).toEqual([]);
 });
 
+test("Chrome extension installs with only intended Feishu access", async () => {
+  const manifest = JSON.parse(
+    await readRepositoryText("extension/manifest.json"),
+  );
+
+  expect(manifest.manifest_version).toBe(3);
+  expect(manifest.name).toBe("Copyability");
+  expect(manifest.permissions ?? []).toEqual([]);
+  expect(manifest.host_permissions ?? []).toEqual([]);
+  expect(manifest.background).toBeUndefined();
+  expect(manifest.icons).toEqual({
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png",
+  });
+  expect(manifest.content_scripts).toEqual([
+    {
+      matches: ["https://my.feishu.cn/wiki/*"],
+      js: ["content.js"],
+      run_at: "document_start",
+    },
+  ]);
+});
+
 test("distributed body has no network, persistence, logging, or remote-code capability", async () => {
-  const { body } = await readUserscript();
+  const { body: userscriptBody } = await readUserscript();
+  const carriers = {
+    "Chrome extension": await readRepositoryText("extension/content.js"),
+    "Tampermonkey userscript": userscriptBody,
+  };
   const forbiddenCapabilities: Array<[string, RegExp]> = [
     [
       "network or upload API",
@@ -74,7 +112,16 @@ test("distributed body has no network, persistence, logging, or remote-code capa
     ],
   ];
 
-  for (const [capability, pattern] of forbiddenCapabilities) {
-    expect(body, `unexpected ${capability}`).not.toMatch(pattern);
+  for (const [carrier, source] of Object.entries(carriers)) {
+    for (const [capability, pattern] of forbiddenCapabilities) {
+      expect(source, `${carrier}: unexpected ${capability}`).not.toMatch(pattern);
+    }
   }
+});
+
+test("extension and userscript carriers contain the same runtime", async () => {
+  const { body } = await readUserscript();
+  const extensionRuntime = await readRepositoryText("extension/content.js");
+
+  expect(extensionRuntime.trim()).toBe(body.trim());
 });

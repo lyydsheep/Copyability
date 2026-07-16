@@ -1,13 +1,3 @@
-// ==UserScript==
-// @name         Copyability
-// @namespace    https://github.com/lyydsheep/Copyability
-// @version      0.2.0
-// @description  Copy a Supported Selection as a Plain-text Copy Result.
-// @match        https://my.feishu.cn/wiki/*
-// @run-at       document-start
-// @grant        none
-// ==/UserScript==
-
 (() => {
   "use strict";
 
