@@ -1,7 +1,7 @@
 # Automated release validation
 
-Validated on 2026-07-16 against the Chrome extension and fallback userscript at
-version `0.2.0`.
+Validated on 2026-07-16 against the primary userscript and optional Chrome
+extension at version `0.2.1`.
 
 ## Commands and results
 
@@ -17,13 +17,14 @@ and block types, cross-block reading order, unsupported and empty selections,
 and both controlled Copy Failure paths. The suite also loads the real Manifest
 V3 extension without Tampermonkey and verifies an exact clipboard result.
 Distribution checks verify that both carriers have exactly one narrow
-`https://my.feishu.cn/wiki/*` match, no extension permissions, `@grant none`, and
-no update, resource, connection, or dependency directives.
+`https://my.feishu.cn/wiki/*` match, no extension permissions, `@grant none`, no
+resource, connection, or dependency directives, and only the declared GitHub
+install/update URLs.
 
 Both distributed runtime files are statically guarded against network and
 upload APIs, persistent browser storage, content logging, userscript privileged
-APIs, and third-party JavaScript loading. A parity check prevents the extension
-and fallback userscript runtimes from drifting. These checks protect the
+APIs, and third-party JavaScript loading. A parity check prevents the optional
+extension and primary userscript runtimes from drifting. These checks protect the
 documented privacy boundary from accidental capability expansion; they are not
 a substitute for source review.
 

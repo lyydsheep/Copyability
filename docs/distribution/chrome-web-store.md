@@ -13,7 +13,7 @@ npm test
 npm run build:extension
 ```
 
-Upload `dist/copyability-extension-0.2.0.zip`. The archive contains the manifest,
+Upload `dist/copyability-extension-0.2.1.zip`. The archive contains the manifest,
 content script, and four local PNG icons, with `manifest.json` at its root.
 
 For local validation, open `chrome://extensions`, enable **Developer mode**,

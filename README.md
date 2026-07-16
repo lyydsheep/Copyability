@@ -1,15 +1,15 @@
 # Copyability
 
-Copyability is a small Chrome extension that lets an Authorized Viewer copy a
-Supported Selection from a Feishu wiki document as a Plain-text Copy Result. It
-works only with text that the viewer can already open, read, and select; it does
-not grant document access or reveal hidden content. The original Tampermonkey
-userscript remains available as a fallback carrier.
+Copyability is a small Tampermonkey userscript that lets an Authorized Viewer
+copy a Supported Selection from a Feishu wiki document as a Plain-text Copy
+Result. It works only with text that the viewer can already open, read, and
+select; it does not grant document access or reveal hidden content. A Manifest
+V3 Chrome extension remains available as an optional carrier.
 
 ## Repository map
 
-- [`extension/`](extension/) is the Chrome extension; [`copyability.user.js`](copyability.user.js)
-  is the fallback userscript.
+- [`copyability.user.js`](copyability.user.js) is the primary Tampermonkey
+  userscript; [`extension/`](extension/) is the optional Chrome extension.
 - [`tests/`](tests/) contains the Playwright fixtures and behavior checks.
 - [`docs/observations/`](docs/observations/) records observed Feishu behavior;
   [`docs/validation/`](docs/validation/) records release validation, and
@@ -27,57 +27,52 @@ userscript remains available as a fallback carrier.
 
 ## Install
 
-### Chrome Web Store (recommended)
+### Tampermonkey (recommended, free)
 
-The intended end-user path is a Chrome Web Store listing. After the listing is
-published, the complete setup is: choose **Add to Chrome**, approve access to
-`my.feishu.cn`, and reload the open Feishu document. Tampermonkey, script
-creation, and manual configuration are not required.
-
-The store listing is not live yet. The repository already contains the
-Manifest V3 extension and produces the upload archive required for review.
-
-### Local extension validation
-
-Use this path only for development or trusted pre-release testing:
-
-1. Open `chrome://extensions` in Chrome.
-2. Enable **Developer mode**.
-3. Choose **Load unpacked** and select this repository's `extension/` directory.
+1. Install
+   [Tampermonkey](https://www.tampermonkey.net/) from its official browser-store
+   link.
+2. In Chrome 138 or later, open Tampermonkey's extension settings and enable
+   **Allow User Scripts**. On older Chrome versions, enable **Developer mode**
+   on `chrome://extensions` if Tampermonkey requests it.
+3. Open **[Install Copyability](https://github.com/lyydsheep/Copyability/raw/main/copyability.user.js)**
+   and approve Tampermonkey's installation prompt.
 4. Reload the target `https://my.feishu.cn/wiki/...` document.
 
-Run `npm run build:extension` to create the Chrome Web Store upload at
-`dist/copyability-extension-0.2.0.zip`.
+There is no script creation or source pasting step. Tampermonkey checks the
+versioned install URL for later Copyability updates.
 
-### Tampermonkey fallback
+### Chrome extension (optional)
 
-If Tampermonkey is already installed, open the repository's
-[`copyability.user.js`](https://github.com/lyydsheep/Copyability/raw/main/copyability.user.js)
-and approve the installation prompt. Manual script creation and source pasting
-are no longer necessary. Reload the target Feishu document after installation.
+The repository also contains a Manifest V3 extension. For trusted local use,
+open `chrome://extensions`, enable **Developer mode**, choose **Load unpacked**,
+select this repository's `extension/` directory, and reload the Feishu document.
+
+Run `npm run build:extension` to create the optional Chrome Web Store upload at
+`dist/copyability-extension-0.2.1.zip`. A public store listing is not currently
+available.
 
 Only install the extension or userscript after reviewing its source and
 confirming that this repository is the source you intend to trust.
 
 ## Disable
 
-Open `chrome://extensions` and switch **Copyability** off, then reload any open
-Feishu document tabs. For the fallback carrier, use the equivalent switch in
-the Tampermonkey dashboard.
+Switch **Copyability** off in the Tampermonkey dashboard, then reload any open
+Feishu document tabs. For the optional extension carrier, use the equivalent
+switch on `chrome://extensions`.
 
 ## Uninstall
 
-Open `chrome://extensions`, choose **Remove** on Copyability, and confirm. For
-the fallback carrier, delete Copyability from the Tampermonkey dashboard.
-Reload any open Feishu document tabs after removal.
+Delete Copyability from the Tampermonkey dashboard. For the optional extension
+carrier, choose **Remove** on `chrome://extensions` and confirm. Reload any open
+Feishu document tabs after removal.
 
 ## Manual update
 
-Chrome Web Store installations update automatically after a reviewed release
-is published. A locally loaded extension must be reloaded from
-`chrome://extensions`, followed by a reload of the Feishu document. To update
-the Tampermonkey fallback, reopen the raw userscript link and approve the newer
-version.
+Tampermonkey checks the userscript's versioned update URL. You can also choose
+**Check for userscript updates** in the Tampermonkey dashboard. After an update,
+reload the Feishu document. A locally loaded extension must instead be replaced
+or updated from the repository and reloaded on `chrome://extensions`.
 
 ## Privacy boundary
 
@@ -85,14 +80,18 @@ Copyability processes the active DOM selection locally in the current browser
 tab and writes only the resulting plain text to the local clipboard after an
 explicit `Cmd+C` or `Ctrl+C` Copy Request.
 
-The distributed extension and fallback userscript:
+The distributed userscript and optional extension:
 
 - declare no extension permissions or userscript grants and run only on
   `https://my.feishu.cn/wiki/*`;
 - make no network requests and upload no document or selection data;
-- does not persist content in browser storage, cookies, or IndexedDB;
-- does not log document or selection content;
-- loads no third-party JavaScript and uses no remote dependencies.
+- do not persist content in browser storage, cookies, or IndexedDB;
+- do not log document or selection content;
+- load no third-party JavaScript and use no remote runtime dependencies.
+
+Tampermonkey contacts the repository's GitHub URL to install Copyability and
+check its declared version for updates. These distribution requests do not
+contain document content, a Supported Selection, or a Plain-text Copy Result.
 
 The script does not change Feishu permissions. Use it only as an Authorized
 Viewer and only where copying the Visible Text is permitted by the document
@@ -125,8 +124,8 @@ native behavior.
   are out of scope.
 - The route is intentionally limited to the `my.feishu.cn` wiki host; other
   Feishu or Lark hosts are not claimed to work.
-- One-click installation depends on publishing the prepared archive through
-  Chrome Web Store review; local validation still uses **Load unpacked**.
+- Tampermonkey itself must be installed first, and current Chrome versions may
+  require the separate **Allow User Scripts** setting.
 
 ## Development validation
 

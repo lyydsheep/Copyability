@@ -34,13 +34,22 @@ test("distribution documentation covers the complete manual lifecycle", async ()
   }
 });
 
-test("distribution documentation presents the Chrome extension as the primary carrier", async () => {
+test("distribution documentation presents direct Tampermonkey installation as the primary carrier", async () => {
   const readme = await readRepositoryText("README.md");
+  const privacy = await readRepositoryText("PRIVACY.md");
+  const validation = await readRepositoryText(
+    "docs/validation/automated-release-validation.md",
+  );
 
-  expect(readme).toContain("### Chrome Web Store (recommended)");
-  expect(readme).toContain("### Local extension validation");
-  expect(readme).toContain("### Tampermonkey fallback");
+  expect(readme).toContain("### Tampermonkey (recommended, free)");
+  expect(readme).toContain("Install Copyability");
+  expect(readme).toContain("Allow User Scripts");
+  expect(readme).toContain("### Chrome extension (optional)");
   expect(readme).toContain("npm run build:extension");
+  expect(privacy).toContain(
+    "Tampermonkey userscript, with an optional Chrome extension",
+  );
+  expect(validation).toContain("primary userscript and optional Chrome");
 });
 
 test("distributed metadata grants no privileges and matches only Feishu wiki pages", async () => {
@@ -55,11 +64,26 @@ test("distributed metadata grants no privileges and matches only Feishu wiki pag
   expect(directives.filter(({ name }) => name === "grant")).toEqual([
     { name: "grant", value: "none" },
   ]);
+  expect(directives.filter(({ name }) => name === "version")).toEqual([
+    { name: "version", value: "0.2.1" },
+  ]);
+  expect(
+    directives.filter(({ name }) => ["updateURL", "downloadURL"].includes(name)),
+  ).toEqual([
+    {
+      name: "updateURL",
+      value:
+        "https://github.com/lyydsheep/Copyability/raw/main/copyability.user.js",
+    },
+    {
+      name: "downloadURL",
+      value:
+        "https://github.com/lyydsheep/Copyability/raw/main/copyability.user.js",
+    },
+  ]);
   expect(
     directives.filter(({ name }) =>
-      ["connect", "downloadURL", "require", "resource", "updateURL"].includes(
-        name,
-      ),
+      ["connect", "require", "resource"].includes(name),
     ),
   ).toEqual([]);
 });
