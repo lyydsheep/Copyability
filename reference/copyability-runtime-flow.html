@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Copyability 运行流程速查</title>
+  <link rel="stylesheet" href="../assets/lesson.css">
+</head>
+<body>
+<main>
+  <p class="eyebrow">Copyability · Reference</p>
+  <h1>运行流程速查</h1>
+  <p class="lede">从一次用户复制请求，到纯文本进入系统剪贴板。</p>
+
+  <div class="flow" aria-label="核心运行流程">
+    <span>识别快捷键</span><span>验证 DOM Range</span><span>触发 copy</span><span>确认后拦截</span>
+  </div>
+
+  <h2>元数据边界</h2>
+  <table>
+    <tbody>
+      <tr><th><code>@match</code></th><td>仅匹配 <code>https://my.feishu.cn/wiki/*</code></td></tr>
+      <tr><th><code>@run-at</code></th><td><code>document-start</code>，尽早注册事件监听器</td></tr>
+      <tr><th><code>@grant</code></th><td><code>none</code>，不申请 <code>GM_*</code> 特权 API</td></tr>
+    </tbody>
+  </table>
+
+  <h2>事件接力</h2>
+  <table>
+    <thead><tr><th>阶段</th><th>关键动作</th><th>退出条件</th></tr></thead>
+    <tbody>
+      <tr><td><code>keydown</code></td><td>识别 Cmd/Ctrl+C，读取 Selection 和 Range</td><td>错误按键、空选区</td></tr>
+      <tr><td>验证</td><td>检查端点、相交块、全部文本节点</td><td>包含不支持内容</td></tr>
+      <tr><td>准备</td><td><code>selection.toString()</code> → <code>pendingPlainText</code></td><td>空白文本、提取异常</td></tr>
+      <tr><td>触发</td><td><code>document.execCommand("copy")</code></td><td>命令未触发 copy</td></tr>
+      <tr><td><code>copy</code></td><td>写入 <code>text/plain</code>，设置成功标记</td><td>缺少 clipboardData</td></tr>
+      <tr><td>收尾</td><td>清空 pending；成功才阻止宿主事件</td><td>失败则显示短暂提示</td></tr>
+    </tbody>
+  </table>
+
+  <h2>DOM 白名单</h2>
+  <div class="card">
+    <p><strong>可成为选区内容：</strong><code>text</code>、<code>heading1</code>、<code>heading2</code>、<code>heading3</code>、<code>bullet</code>。</p>
+    <p><strong>仅作为透明祖先：</strong><code>page</code>、<code>callout</code>。</p>
+    <p><strong>明确不处理：</strong>表格、代码块、评论、白板、嵌入应用、图片内容及其他未知块。</p>
+  </div>
+
+  <h2>三个状态变量</h2>
+  <table>
+    <tbody>
+      <tr><th><code>pendingPlainText</code></th><td>两个事件之间的一次性交接数据</td></tr>
+      <tr><th><code>copySucceeded</code></th><td>决定是否可以安全拦截飞书后续事件</td></tr>
+      <tr><th><code>failureTimer</code></th><td>管理唯一的短暂错误提示</td></tr>
+    </tbody>
+  </table>
+
+  <h2>最值得记住的风险</h2>
+  <p><code>document.execCommand("copy")</code> 已弃用。当前实现依赖它在用户按键期间触发可写的 <code>copy</code> 事件，因此每次 Feishu 或 Chrome 变化后都应重新跑自动化与真实页面验收。</p>
+
+  <p>原始资料：<a href="https://www.tampermonkey.net/documentation.php">Tampermonkey Documentation</a>、<a href="https://developer.mozilla.org/en-US/docs/Web/API/Selection">Selection</a>、<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/copy_event">copy event</a>、<a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/execCommand">execCommand()</a>。</p>
+  <p><a href="../lessons/0002-how-copyability-copy-flow-works.html">返回完整课程</a> · <a href="../copyability.user.js">查看源码</a></p>
+</main>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Copyability 的一次复制是怎样完成的？</title>
+  <link rel="stylesheet" href="../assets/lesson.css">
+</head>
+<body>
+<main>
+  <p class="eyebrow">Copyability · Lesson 0002</p>
+  <h1>一次复制，是两个事件接力</h1>
+  <p class="lede">学完这一小课，你可以沿着一次 <code>Cmd+C</code>，说清楚脚本如何验证选区、生成纯文本、接管剪贴板，以及失败时为什么不会把页面彻底卡死。</p>
+
+  <div class="flow" aria-label="复制运行链路">
+    <span>keydown</span><span>验证 Selection</span><span>触发 copy</span><span>写入 text/plain</span>
+  </div>
+
+  <h2>先建立一个准确心智模型</h2>
+  <p>Copyability 不是在后台持续读取文档，也不是扫描整篇页面。它在页面启动时只注册两个事件监听器，然后等待用户主动按下复制快捷键。</p>
+  <p>这两个监听器通过三个短期状态变量接力：</p>
+
+  <table>
+    <thead><tr><th>状态</th><th>作用</th></tr></thead>
+    <tbody>
+      <tr><td><code>pendingPlainText</code></td><td>把已验证的纯文本从 <code>keydown</code> 临时交给 <code>copy</code> 事件。</td></tr>
+      <tr><td><code>copySucceeded</code></td><td>记录本次 <code>copy</code> 事件是否真的写入了剪贴板。</td></tr>
+      <tr><td><code>failureTimer</code></td><td>保证失败提示在 1.5 秒后消失，并避免多个计时器叠加。</td></tr>
+    </tbody>
+  </table>
+
+  <h2>第一棒：<code>keydown</code> 判断“这次该不该接管”</h2>
+  <p>监听器先确认按键是没有 <code>Alt</code>/<code>Shift</code> 的 <code>Cmd+C</code> 或 <code>Ctrl+C</code>。然后用 <code>window.getSelection()</code> 取得用户当前选区；浏览器用一个 <code>Selection</code> 表示它，再用一个 <code>Range</code> 表示选区在 DOM 中的连续范围。<a href="https://developer.mozilla.org/en-US/docs/Web/API/Selection">MDN 的 Selection 文档</a>给出了这两个对象的关系。</p>
+
+  <div class="card">
+    <h3>选区要通过三层门</h3>
+    <p><strong>端点：</strong>开始和结束都必须落在只读 <code>.text-editor</code> 的 <code>.ace-line</code> 内。</p>
+    <p><strong>块类型：</strong>正文、1–3 级标题和普通无序列表可复制；<code>page</code> 与 <code>callout</code> 只作为透明结构容器。</p>
+    <p><strong>内部节点：</strong><code>TreeWalker</code> 遍历范围内的每个文本节点，防止“起点和终点合法，但中间跨过表格或代码块”。</p>
+  </div>
+
+  <p><code>Range.intersectsNode()</code> 用来判断一个 Feishu 块是否与选区相交；<code>TreeWalker</code> 则只枚举文本节点。二者的行为可分别查阅 <a href="https://developer.mozilla.org/en-US/docs/Web/API/Range/intersectsNode">Range.intersectsNode()</a> 和 <a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/createTreeWalker">Document.createTreeWalker()</a>。</p>
+
+  <h2>第二棒：把选区变成一次性纯文本</h2>
+  <pre><code>plainText = selection.toString();
+pendingPlainText = plainText;
+copySucceeded = false;
+document.execCommand("copy");</code></pre>
+  <p><code>selection.toString()</code> 只取用户选中的可见文字。文本被放进 <code>pendingPlainText</code> 后，脚本调用 <code>execCommand("copy")</code>，让浏览器进入一次真实的复制流程并触发另一个监听器。</p>
+
+  <p class="note"><strong>技术债：</strong><code>execCommand()</code> 已被弃用。这里保留它，是因为当前 Chrome 中它能从用户按键处理期间触发带有 <code>clipboardData</code> 的 <code>copy</code> 事件；这条兼容路径必须持续测试，而不是视为永久 API。参见 <a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/execCommand">MDN 的弃用说明</a>。</p>
+
+  <h2>第三棒：<code>copy</code> 事件写入剪贴板</h2>
+  <pre><code>event.clipboardData.setData("text/plain", pendingPlainText);
+event.preventDefault();
+event.stopImmediatePropagation();
+copySucceeded = true;</code></pre>
+  <p>浏览器的 <code>copy</code> 事件允许处理器用 <code>clipboardData.setData()</code> 指定剪贴板内容，并用 <code>preventDefault()</code> 取消浏览器原来的复制动作。Copyability 只写 <code>text/plain</code>，所以字体、颜色、图片和链接元数据不会进入结果。<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/copy_event">MDN 的 copy 事件说明</a>展示了同一种标准写法。</p>
+
+  <p>两个事件都使用捕获阶段（<code>true</code>），让脚本在事件沿 DOM 向下传播时尽早处理。只有当 <code>copySucceeded</code> 已经变成 <code>true</code>，外层 <code>keydown</code> 才阻止后续传播，于是飞书的拒绝逻辑没有机会覆盖成功结果。</p>
+
+  <h2>失败为什么不会变成“按键失灵”</h2>
+  <p>如果选区不受支持，脚本直接返回，把复制完全留给页面。如果选区受支持但提取或写入失败，脚本显示短暂错误提示；因为没有把成功标记设为 <code>true</code>，它不会把外层按键事件当作成功请求吞掉。</p>
+  <p>无论成功失败，<code>pendingPlainText</code> 都在 <code>finally</code> 中恢复为 <code>null</code>。这是一个重要安全边界：旧文本不能被下一次无关的 <code>copy</code> 事件误用。</p>
+
+  <details class="recall">
+    <summary>先凭记忆回答，再展开核对</summary>
+    <p><strong>问题 1：</strong>为什么只检查选区的起点和终点还不够？</p>
+    <p>因为中间可能跨过表格、代码块等不支持内容，所以还要遍历所有相交块和文本节点。</p>
+    <p><strong>问题 2：</strong><code>pendingPlainText</code> 为什么必须在 <code>finally</code> 里清空？</p>
+    <p>因为它只是本次事件接力的一次性数据，清空可防止未来复制误用旧文本。</p>
+    <p><strong>问题 3：</strong>为什么必须等 <code>copySucceeded</code> 后才阻止外层按键事件？</p>
+    <p>因为失败时应保留页面原行为和重试空间，不能让 Copyability 把复制彻底吞掉。</p>
+  </details>
+
+  <h2>现在你应该能说出的一句话</h2>
+  <p><strong>Copyability 是一个两事件状态机：</strong><code>keydown</code> 验证并暂存选区纯文本，<code>copy</code> 将它写入剪贴板；只有写入成功后才拦截飞书后续处理。</p>
+
+  <p>建议把 <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/copy_event">MDN：copy event</a> 作为本课的首选原始资料。随后可打开 <a href="../reference/copyability-runtime-flow.html">Copyability 运行流程速查</a>，或直接对照 <a href="../copyability.user.js">完整源码</a>。</p>
+  <p class="note">如果其中任何一步仍模糊，直接在对话里指出函数名或代码行；我可以用一次真实 <code>Cmd+C</code> 继续带你逐帧追踪。</p>
+</main>
+</body>
+</html>
