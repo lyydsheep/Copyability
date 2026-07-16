@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>用户脚本基础速查</title>
+  <link rel="stylesheet" href="../assets/lesson.css">
+</head>
+<body>
+<main>
+  <p class="eyebrow">Copyability · Reference</p>
+  <h1>用户脚本基础速查</h1>
+  <p class="lede">判断一个 Tampermonkey 用户脚本“在哪里运行、何时运行、拥有什么能力”的最小词汇表。</p>
+
+  <table>
+    <thead><tr><th>概念</th><th>速记</th></tr></thead>
+    <tbody>
+      <tr><td>Tampermonkey</td><td>安装在浏览器里的用户脚本管理器。</td></tr>
+      <tr><td>用户脚本</td><td>被管理器注入匹配网页的 JavaScript。</td></tr>
+      <tr><td><code>@match</code></td><td>网址白名单；越窄越安全、越容易推理。</td></tr>
+      <tr><td><code>@run-at</code></td><td>选择脚本在页面生命周期的哪个阶段运行。</td></tr>
+      <tr><td><code>@grant</code></td><td>声明脚本需要哪些额外能力。</td></tr>
+      <tr><td><code>GM_*</code></td><td>Tampermonkey 提供的特权 API，例如存储或剪贴板。</td></tr>
+      <tr><td>DOM</td><td>脚本能够读取和操作的网页结构。</td></tr>
+    </tbody>
+  </table>
+
+  <div class="card">
+    <h2>安全检查</h2>
+    <p>安装脚本前检查：来源、<code>@match</code> 范围、<code>@grant</code> 权限、外部 <code>@require</code> 依赖。不要给一个只服务单站点的脚本全站权限。</p>
+  </div>
+
+  <p>来源：<a href="https://www.tampermonkey.net/documentation.php">Tampermonkey Documentation</a>；<a href="https://developer.chrome.com/docs/extensions/develop/concepts/content-scripts">Chrome Content Scripts</a>。</p>
+  <p><a href="../lessons/0001-what-is-a-userscript.html">返回第 1 课</a></p>
+</main>
+</body>
+</html>

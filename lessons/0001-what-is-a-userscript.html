@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>什么是 Tampermonkey 用户脚本？</title>
+  <link rel="stylesheet" href="../assets/lesson.css">
+</head>
+<body>
+<main>
+  <p class="eyebrow">Copyability · Lesson 0001</p>
+  <h1>什么是 Tampermonkey 用户脚本？</h1>
+  <p class="lede">一句话：Tampermonkey 是装在 Chrome 里的“脚本管理器”，用户脚本是由它按规则注入网页并执行的一小段 JavaScript。</p>
+
+  <div class="flow" aria-label="运行关系">
+    <span>Chrome</span><span>Tampermonkey</span><span>用户脚本</span><span>匹配的网页</span>
+  </div>
+
+  <h2>两个东西，不要混为一谈</h2>
+  <div class="card">
+    <h3>Tampermonkey</h3>
+    <p>浏览器扩展。负责保存、启停、匹配和执行用户脚本，也提供一些额外 API。</p>
+    <h3>用户脚本</h3>
+    <p>你自己编写或安装的 JavaScript 文件。它声明自己在哪些网址运行，然后读取或修改页面。</p>
+  </div>
+
+  <p>用户脚本顶部有一个“元数据块”。它不是业务代码，而是给 Tampermonkey 的运行说明：</p>
+
+  <pre><code>// ==UserScript==
+// @name         Copyability prototype
+// @match        https://example.com/docs/*
+// @grant        none
+// ==/UserScript==
+
+console.log('只在匹配的文档页面运行');</code></pre>
+
+  <table>
+    <thead><tr><th>字段</th><th>含义</th></tr></thead>
+    <tbody>
+      <tr><td><code>@name</code></td><td>脚本在管理器中显示的名称。</td></tr>
+      <tr><td><code>@match</code></td><td>允许脚本运行的网址范围；应尽量收窄。</td></tr>
+      <tr><td><code>@grant</code></td><td>脚本申请的 Tampermonkey 特权 API；没有需要时使用 <code>none</code>。</td></tr>
+    </tbody>
+  </table>
+
+  <h2>为什么适合做首版</h2>
+  <p>完整 Chrome 扩展通常还需要清单、权限声明、后台逻辑和打包结构。用户脚本把这些脚手架压缩成一个文件，因此适合快速回答：“浏览器页面里能不能可靠实现这个交互？”</p>
+  <p>它不是魔法：只能在被允许的页面环境中工作，页面结构变化也可能让脚本失效。若最终需要发布、自动更新、复杂界面或多页面协作，再迁移成 Chrome 扩展更合适。</p>
+
+  <h2>与 Copyability 的关系</h2>
+  <p>首版可以将运行范围限制在目标文档域名，只处理授权浏览者已经看见并选择的文本。这样能用最少工程量验证核心行为，同时保持权限范围清晰。</p>
+
+  <section class="recall">
+    <h2>30 秒回忆练习</h2>
+    <p>先不往下看：用自己的话回答——Tampermonkey 和用户脚本分别负责什么？<code>@match</code> 又限制了什么？</p>
+    <button type="button" onclick="document.querySelector('.answer').hidden = false; this.disabled = true">核对答案</button>
+    <div class="answer" hidden>
+      <p><strong>参考：</strong>Tampermonkey 管理和注入脚本；用户脚本执行具体网页逻辑；<code>@match</code> 限定脚本可以运行的网址。</p>
+    </div>
+  </section>
+
+  <h2>继续阅读</h2>
+  <p>首选原始资料：<a href="https://www.tampermonkey.net/documentation.php">Tampermonkey 官方文档</a>。需要速查时打开 <a href="../reference/userscript-basics.html">用户脚本基础速查</a>。</p>
+  <p class="note">哪里不清楚，直接回到对话里问我；理解以后，我们再决定 Copyability 是否采用这种载体。</p>
+</main>
+</body>
+</html>

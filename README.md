@@ -6,6 +6,21 @@ Result. It only
 works with text that the viewer can already open, read, and select; it does not
 grant document access or reveal hidden content.
 
+## Repository map
+
+- [`copyability.user.js`](copyability.user.js) is the installable userscript.
+- [`tests/`](tests/) contains the Playwright fixtures and behavior checks.
+- [`docs/observations/`](docs/observations/) records observed Feishu behavior;
+  [`docs/validation/`](docs/validation/) records release validation.
+- [`CONTEXT.md`](CONTEXT.md) defines the project language, while
+  [`MISSION.md`](MISSION.md) and [`RESOURCES.md`](RESOURCES.md) capture scope and
+  source material.
+- [`lessons/`](lessons/), [`reference/`](reference/), and
+  [`learning-records/`](learning-records/) contain the supporting learning
+  material.
+- [`AGENTS.md`](AGENTS.md) and [`docs/agents/`](docs/agents/) describe the issue,
+  triage, and domain conventions used by coding agents.
+
 ## Install
 
 1. Install Tampermonkey in Chrome from its official browser-store listing.
