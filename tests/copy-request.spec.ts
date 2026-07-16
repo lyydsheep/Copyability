@@ -42,6 +42,22 @@ for (const { name, shortcut } of [
   });
 }
 
+copyabilityTest("copies a block-type paragraph inside structural document blocks", async ({
+  copyabilityPage,
+}) => {
+  await copyabilityPage
+    .locator("#page-wrapped-selection .ace-line")
+    .selectText();
+  await copyabilityPage.keyboard.press("Meta+C");
+
+  await expect
+    .poll(() => copyabilityPage.evaluate(() => navigator.clipboard.readText()))
+    .toBe("A paragraph inside structural document blocks.");
+  await expect(copyabilityPage.locator("#host-denial")).toBeHidden();
+  await expectNoCopyabilityFeedback(copyabilityPage);
+  await expectHostCopyEvents(copyabilityPage, 0);
+});
+
 for (const { blockType, selector, expectedText } of [
   {
     blockType: "heading1",

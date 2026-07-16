@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Copyability
 // @namespace    https://github.com/lyydsheep/Copyability
-// @version      0.1.0
+// @version      0.1.3
 // @description  Copy a Supported Selection as a Plain-text Copy Result.
 // @match        https://my.feishu.cn/wiki/*
 // @run-at       document-start
@@ -43,11 +43,11 @@
   };
 
   const supportedBlockSelector = [
-    '.block.docx-text-block[data-block-type="text"]',
-    '.block.docx-heading1-block[data-block-type="heading1"]',
-    '.block.docx-heading2-block[data-block-type="heading2"]',
-    '.block.docx-heading3-block[data-block-type="heading3"]',
-    '.block.docx-bullet-block[data-block-type="bullet"]',
+    '.block[data-block-type="text"]',
+    '.block[data-block-type="heading1"]',
+    '.block[data-block-type="heading2"]',
+    '.block[data-block-type="heading3"]',
+    '.block[data-block-type="bullet"]',
   ].join(",");
 
   const containingElement = (node) =>
@@ -71,7 +71,12 @@
       ...document.querySelectorAll(".block[data-block-type]"),
     ]
       .filter((block) => range.intersectsNode(block))
-      .every((block) => block.matches(supportedBlockSelector));
+      .every(
+        (block) =>
+          block.dataset.blockType === "page" ||
+          block.dataset.blockType === "callout" ||
+          block.matches(supportedBlockSelector),
+      );
     if (!blocksAreSupported) return false;
 
     const root = range.commonAncestorContainer;

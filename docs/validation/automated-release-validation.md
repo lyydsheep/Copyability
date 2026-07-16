@@ -1,12 +1,12 @@
 # Automated release validation
 
-Validated on 2026-07-15 against the userscript prototype at version `0.1.0`.
+Validated on 2026-07-16 against the userscript prototype at version `0.1.3`.
 
 ## Commands and results
 
 - `node --check copyability.user.js` — passed.
 - `npm run typecheck` — passed with TypeScript 5.9.3.
-- `npm test` — 22 Playwright tests passed in headless Chromium.
+- `npm test` — 23 Playwright tests passed in headless Chromium.
 
 The suite covers exact plain-text copying for the supported keyboard shortcuts
 and block types, cross-block reading order, unsupported and empty selections,
