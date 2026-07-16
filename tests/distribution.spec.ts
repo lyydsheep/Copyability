@@ -43,6 +43,9 @@ test("distribution documentation presents direct Tampermonkey installation as th
 
   expect(readme).toContain("### Tampermonkey (recommended, free)");
   expect(readme).toContain("Install Copyability");
+  expect(readme).toContain(
+    "https://greasyfork.org/zh-CN/scripts/587207-copyability",
+  );
   expect(readme).toContain("Allow User Scripts");
   expect(readme).toContain("### Chrome extension (optional)");
   expect(readme).toContain("npm run build:extension");

@@ -20,10 +20,11 @@ Its runtime contains no network requests, analytics, advertising, telemetry, or
 remote code.
 
 When the Tampermonkey carrier is installed or checked for an update,
-Tampermonkey requests `copyability.user.js` from this project's GitHub
-repository. That distribution request is handled by Tampermonkey and GitHub; it
-does not contain Visible Text, a Supported Selection, or a Plain-text Copy
-Result. The Copyability runtime itself performs no network request.
+Tampermonkey requests `copyability.user.js` from Greasy Fork or this project's
+GitHub repository, depending on the installation source. That distribution
+request is handled by Tampermonkey and the selected host; it does not contain
+Visible Text, a Supported Selection, or a Plain-text Copy Result. The
+Copyability runtime itself performs no network request.
 
 ## Storage and retention
 

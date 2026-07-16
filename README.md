@@ -35,12 +35,15 @@ V3 Chrome extension remains available as an optional carrier.
 2. In Chrome 138 or later, open Tampermonkey's extension settings and enable
    **Allow User Scripts**. On older Chrome versions, enable **Developer mode**
    on `chrome://extensions` if Tampermonkey requests it.
-3. Open **[Install Copyability](https://github.com/lyydsheep/Copyability/raw/main/copyability.user.js)**
-   and approve Tampermonkey's installation prompt.
+3. Open **[Install Copyability on Greasy Fork](https://greasyfork.org/zh-CN/scripts/587207-copyability)**,
+   choose the install button, and approve Tampermonkey's prompt. The
+   [GitHub install URL](https://github.com/lyydsheep/Copyability/raw/main/copyability.user.js)
+   remains available as a fallback.
 4. Reload the target `https://my.feishu.cn/wiki/...` document.
 
-There is no script creation or source pasting step. Tampermonkey checks the
-versioned install URL for later Copyability updates.
+There is no script creation or source pasting step. Greasy Fork installations
+receive updates through Greasy Fork; GitHub installations use the declared
+GitHub update URL.
 
 ### Chrome extension (optional)
 
